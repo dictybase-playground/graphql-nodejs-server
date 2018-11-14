@@ -8,20 +8,20 @@ const baseURL = "https://betaapi.dictybase.local"
 
 const userJSON = json => {
   return {
-    id: json.data.id,
-    first_name: json.data.attributes.first_name,
-    last_name: json.data.attributes.last_name,
-    email: json.data.attributes.email,
-    organization: json.data.attributes.organization,
-    first_address: json.data.attributes.first_address,
-    second_address: json.data.attributes.second_address,
-    city: json.data.attributes.city,
-    zipcode: json.data.attributes.zipcode,
-    country: json.data.attributes.country,
-    phone: json.data.attributes.phone,
-    created_at: json.data.attributes.created_at,
-    updated_at: json.data.attributes.updated_at,
-    is_active: json.data.attributes.is_active,
+    id: json.id,
+    first_name: json.attributes.first_name,
+    last_name: json.attributes.last_name,
+    email: json.attributes.email,
+    organization: json.attributes.organization,
+    first_address: json.attributes.first_address,
+    second_address: json.attributes.second_address,
+    city: json.attributes.city,
+    zipcode: json.attributes.zipcode,
+    country: json.attributes.country,
+    phone: json.attributes.phone,
+    created_at: json.attributes.created_at,
+    updated_at: json.attributes.updated_at,
+    is_active: json.attributes.is_active,
   }
 }
 
@@ -31,30 +31,42 @@ const resolvers = {
       try {
         const res = await fetch(`${baseURL}/users/${id}`)
         const json = await res.json()
-        return userJSON(json)
+        return userJSON(json.data)
       } catch (error) {
-        console.log(error)
+        console.error(error)
       }
     },
     userByEmail: async (root, { email }) => {
       try {
         const res = await fetch(`${baseURL}/users/email/${email}`)
         const json = await res.json()
-        return userJSON(json)
+        return userJSON(json.data)
       } catch (error) {
-        console.log(error)
+        console.error(error)
       }
     },
-    // listUsers: async (root, { next_cursor, limit }) => {
-    //   try {
-    //     const res = await fetch(`${baseURL}/users`)
-    //     const json = await res.json()
-    //     console.log(json)
-    //     return json
-    //   } catch (error) {
-    //     console.log(error)
-    //   }
-    // },
+    listUsers: async (root, { next_cursor, limit }) => {
+      try {
+        const nextCursor = next_cursor || 0
+        const previousCursor = parseInt(nextCursor) - 1 || 0
+
+        const res = await fetch(
+          `${baseURL}/users?pagenum=${nextCursor}&pagesize=${limit}`,
+        )
+        const json = await res.json()
+
+        return {
+          users: json.data.map(item => {
+            return userJSON(item)
+          }),
+          totalCount: json.meta.pagination.records,
+          nextCursor: nextCursor,
+          previousCursor: previousCursor,
+        }
+      } catch (error) {
+        console.error(error)
+      }
+    },
     role: async (root, { id }) => {
       try {
         const res = await fetch(`${baseURL}/roles/${id}`)
@@ -67,19 +79,24 @@ const resolvers = {
           updated_at: json.data.attributes.updated_at,
         }
       } catch (error) {
-        console.log(error)
+        console.error(error)
       }
     },
-    // listRoles: async root => {
-    //   try {
-    //     const res = await fetch(`${baseURL}/roles`)
-    //     const json = await res.json()
-    //     console.log(json)
-    //     return json
-    //   } catch (error) {
-    //     console.log(error)
-    //   }
-    // },
+    listRoles: async root => {
+      try {
+        const res = await fetch(`${baseURL}/roles`)
+        const json = await res.json()
+        return json.data.map(item => ({
+          id: item.id,
+          role: item.attributes.role,
+          description: item.attributes.description,
+          created_at: item.attributes.created_at,
+          updated_at: item.attributes.updated_at,
+        }))
+      } catch (error) {
+        console.error(error)
+      }
+    },
     permission: async (root, { id }) => {
       try {
         const res = await fetch(`${baseURL}/permissions/${id}`)
@@ -93,19 +110,26 @@ const resolvers = {
           resource: json.data.attributes.resource,
         }
       } catch (error) {
-        console.log(error)
+        console.error(error)
       }
     },
-    // listPermissions: async root => {
-    //   try {
-    //     const res = await fetch(`${baseURL}/permissions`)
-    //     const json = await res.json()
-    //     console.log(json)
-    //     return json
-    //   } catch (error) {
-    //     console.log(error)
-    //   }
-    // },
+    listPermissions: async root => {
+      try {
+        const res = await fetch(`${baseURL}/permissions`)
+        const json = await res.json()
+
+        return json.data.map(item => ({
+          id: item.id,
+          permission: item.attributes.permission,
+          description: item.attributes.description,
+          created_at: item.attributes.created_at,
+          updated_at: item.attributes.updated_at,
+          resource: item.attributes.resource,
+        }))
+      } catch (error) {
+        console.error(error)
+      }
+    },
   },
   Mutation: {
     // mutations go here
