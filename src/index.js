@@ -4,7 +4,7 @@ const fetch = require("node-fetch")
 // prevent certificate errors
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0
 
-const baseURL = "https://betaapi.dictybase.local"
+const baseURL = process.env.BASE_URL || "https://betaapi.dictybase.local"
 
 const userJSON = json => {
   return {

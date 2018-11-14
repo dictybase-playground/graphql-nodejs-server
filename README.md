@@ -10,3 +10,5 @@ This is a Node.js server that wraps our user REST API with GraphQL.
 4. Open your browser to `http://localhost:4000/` and have fun
 
 Note: only Queries are functional right now, not Mutations.
+
+The base URL defaults to `https://betaapi.dictybase.local`. If you want to change this URL, you can use the `BASE_URL` env variable.
