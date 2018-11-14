@@ -134,10 +134,46 @@ const resolvers = {
   Mutation: {
     // mutations go here
   },
+  User: {
+    roles: async ({ id }) => {
+      try {
+        const res = await fetch(`${baseURL}/users/${id}/roles`)
+        const json = await res.json()
+        return json.data.map(item => ({
+          id: item.id,
+          role: item.attributes.role,
+          description: item.attributes.description,
+          created_at: item.attributes.created_at,
+          updated_at: item.attributes.updated_at,
+        }))
+      } catch (error) {
+        console.error(error)
+      }
+    },
+  },
+  Role: {
+    permissions: async ({ id }) => {
+      try {
+        const res = await fetch(`${baseURL}/roles/${id}/permissions`)
+        const json = await res.json()
+        return json.data.map(item => ({
+          id: item.id,
+          permission: item.attributes.permission,
+          description: item.attributes.description,
+          created_at: item.attributes.created_at,
+          updated_at: item.attributes.updated_at,
+          resource: item.attributes.resource,
+        }))
+      } catch (error) {
+        console.error(error)
+      }
+    },
+  },
 }
 
 const server = new GraphQLServer({
   typeDefs: "./src/schema.graphql",
   resolvers,
 })
+
 server.start(() => console.log("Server is running on http://localhost:4000"))
